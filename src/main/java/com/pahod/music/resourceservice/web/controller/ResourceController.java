@@ -3,8 +3,11 @@ package com.pahod.music.resourceservice.web.controller;
 import com.pahod.music.resourceservice.entity.AudioResourceEntity;
 import com.pahod.music.resourceservice.service.ResourceService;
 import com.pahod.music.resourceservice.web.dto.AudioResourceResponse;
+import com.pahod.music.resourceservice.web.dto.RemovedResourcesIDs;
 import com.pahod.music.resourceservice.web.dto.ResourceDTO;
 import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,13 +16,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @RestController
@@ -67,19 +68,16 @@ public class ResourceController {
     return ResponseEntity.ok(resourceMapper.modelToDTO(resource));
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<ResourceDTO> updateLibraryRecord(
-      @PathVariable("id") Integer id, @RequestBody ResourceDTO dto) {
-    log.debug("Update resource ID: {}", id);
-    AudioResourceEntity audioResourceEntity = null; // resourceMapper.dtoToModel(dto);
-    AudioResourceEntity resource = resourceService.updateResource(audioResourceEntity);
-    return ResponseEntity.ok(resourceMapper.modelToDTO(resource));
-  }
+  @DeleteMapping("/resources")
+  public ResponseEntity<RemovedResourcesIDs> deleteResources(@RequestParam String idsParam) {
+    log.debug("Delete resource ID: {}", idsParam);
 
-  @ResponseStatus(HttpStatus.OK)
-  @DeleteMapping("/{id}")
-  public void deleteLibraryRecord(@PathVariable("id") int id) {
-    log.debug("Delete resource ID: {}", id);
-    resourceService.deleteResource(id);
+    if (idsParam.length() >= 200)
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID length exceeds limit");
+
+    List<Integer> idsToDelete = Arrays.stream(idsParam.split(",")).map(Integer::parseInt).toList();
+
+    List<Integer> idsOfRemoved = resourceService.deleteResources(idsToDelete);
+    return ResponseEntity.ok(new RemovedResourcesIDs(idsOfRemoved));
   }
 }

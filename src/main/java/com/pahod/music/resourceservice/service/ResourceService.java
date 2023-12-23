@@ -7,6 +7,7 @@ import com.pahod.music.resourceservice.exception.ResourceNotFoundException;
 import com.pahod.music.resourceservice.repository.ResourceRepository;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
@@ -76,9 +77,11 @@ public class ResourceService {
         .orElseThrow(() -> new ResourceNotFoundException("Couldn't find resource for Id: " + id));
   }
 
-  public AudioResourceEntity updateResource(AudioResourceEntity audioResourceEntity) {
-    return null;
+  public List<Integer> deleteResources(List<Integer> idsToDelete) {
+    log.debug("IDs to be removed: {}", idsToDelete);
+    return idsToDelete.stream()
+        .filter(resourceRepository::existsById)
+        .peek(resourceRepository::deleteById)
+        .toList();
   }
-
-  public void deleteResource(int id) {}
 }

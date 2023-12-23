@@ -8,9 +8,10 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ResourceMapper {
 
-    ResourceDTO modelToDTO(AudioResourceEntity resource);
-    AudioResourceResponse modelToResponse(AudioResourceEntity resource);
+  ResourceDTO modelToDTO(AudioResourceEntity resource);
 
-//    @Mapping(target = "id", ignore = true)
-//    AudioResourceEntity dtoToModel(ResourceDTO dto);
+  AudioResourceResponse modelToResponse(AudioResourceEntity resource);
+
+  //    @Mapping(target = "id", ignore = true)
+  //    AudioResourceEntity dtoToModel(ResourceDTO dto);
 }

@@ -1,4 +1,3 @@
-
 ## Sub-task 1: Resource Service
 
 For a **Resource Service**, it is recommended to implement a service with CRUD operations for processing mp3 files.
@@ -121,7 +120,9 @@ For a **Resource Service**, it is recommended to implement a service with CRUD o
 </table>
 
 When uploading a mp3 file, the **Resource Service** should process the file in this way:
-- Extract file metadata. An external library can be used for this purpose.(e.g. [Apache Tika](https://www.tutorialspoint.com/tika/tika_extracting_mp3_files.htm)).
+
+- Extract file metadata. An external library can be used for this purpose.(
+  e.g. [Apache Tika](https://www.tutorialspoint.com/tika/tika_extracting_mp3_files.htm)).
 - Store mp3 file to the underlying database of the service as Blob.
 - Invoke **Song Service** to save mp3 file metadata.
 
