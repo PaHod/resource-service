@@ -1,0 +1,26 @@
+server:
+  port: 8087
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/music_resource
+    username: ${POSTGRE_USER}
+    password: ${POSTGRE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+#    initialization-mode: never
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  hibernate:
+    ddl-auto: create
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+#  POSTGRE_USER=postgres
+#  POSTGRE_PASSWORD=admin
