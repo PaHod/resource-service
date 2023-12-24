@@ -13,23 +13,19 @@ public class SongClient {
   private final WebClient webClient;
 
   public SongClient(
-          WebClient.Builder webClientBuilder, @Value("${song.service.url}") String baseUrl) {
+      WebClient.Builder webClientBuilder, @Value("${song.service.url}") String baseUrl) {
     this.webClient = webClientBuilder.baseUrl(baseUrl).build();
   }
 
   public void saveMetadata(Metadata metadata, Integer audioResourceId) {
 
-    System.out.println("resource Id: " + audioResourceId);
-    String[] metadataNames = metadata.names();
-    for (String name : metadataNames) {
-      System.out.println(name + ": " + metadata.get(name));
-    }
+    MetadataDTO metadataDTO = MetadataDTO.fromMetadata(metadata, audioResourceId);
 
     webClient
         .post()
         .uri(SONGS_API)
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(metadata)
+        .bodyValue(metadataDTO)
         .retrieve()
         .bodyToMono(Void.class)
         .block();

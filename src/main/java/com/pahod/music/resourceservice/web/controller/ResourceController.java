@@ -3,7 +3,7 @@ package com.pahod.music.resourceservice.web.controller;
 import com.pahod.music.resourceservice.entity.AudioResourceEntity;
 import com.pahod.music.resourceservice.service.ResourceService;
 import com.pahod.music.resourceservice.web.dto.AudioResourceResponse;
-import com.pahod.music.resourceservice.web.dto.RemovedResourcesIDs;
+import com.pahod.music.resourceservice.web.dto.DeletedResourcesIDs;
 import com.pahod.music.resourceservice.web.dto.ResourceDTO;
 import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
 import java.util.Arrays;
@@ -69,8 +69,8 @@ public class ResourceController {
   }
 
   @DeleteMapping("/resources")
-  public ResponseEntity<RemovedResourcesIDs> deleteResources(@RequestParam String idsParam) {
-    log.debug("Delete resource ID: {}", idsParam);
+  public ResponseEntity<DeletedResourcesIDs> deleteResources(@RequestParam String idsParam) {
+    log.debug("Delete resources IDs: {}", idsParam);
 
     if (idsParam.length() >= 200)
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID length exceeds limit");
@@ -78,6 +78,6 @@ public class ResourceController {
     List<Integer> idsToDelete = Arrays.stream(idsParam.split(",")).map(Integer::parseInt).toList();
 
     List<Integer> idsOfRemoved = resourceService.deleteResources(idsToDelete);
-    return ResponseEntity.ok(new RemovedResourcesIDs(idsOfRemoved));
+    return ResponseEntity.ok(new DeletedResourcesIDs(idsOfRemoved));
   }
 }

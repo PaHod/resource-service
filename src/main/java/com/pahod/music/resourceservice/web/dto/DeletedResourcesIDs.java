@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class RemovedResourcesIDs {
+public class DeletedResourcesIDs {
   List<Integer> ids;
 }
