@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,10 +64,16 @@ public class ResourceController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ResourceDTO> getResource(@PathVariable("id") int id) {
+  public ResponseEntity<byte[]> getResource(@PathVariable("id") int id) {
     log.debug("Get resource ID: {}", id);
     AudioResourceEntity resource = resourceService.getResource(id);
-    return ResponseEntity.ok(resourceMapper.modelToDTO(resource));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
+    headers.setContentLength(resource.getData().length);
+    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
+
+    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
   }
 
   @DeleteMapping("/resources")
