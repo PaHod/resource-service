@@ -4,7 +4,6 @@ import com.pahod.music.resourceservice.entity.AudioResourceEntity;
 import com.pahod.music.resourceservice.service.ResourceService;
 import com.pahod.music.resourceservice.web.dto.AudioResourceResponse;
 import com.pahod.music.resourceservice.web.dto.DeletedResourcesIDs;
-import com.pahod.music.resourceservice.web.dto.ResourceDTO;
 import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
 import java.util.Arrays;
 import java.util.List;

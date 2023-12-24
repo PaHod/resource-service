@@ -20,7 +20,7 @@ public class MetadataDTO {
   private String year;
 
   public static MetadataDTO fromMetadata(Metadata metadata, Integer resourceId) {
-   /*
+    /*
     content type: audio/mpeg
     resource Id: 15
     xmpDM:genre: Electronic
