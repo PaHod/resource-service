@@ -32,6 +32,11 @@ public class ResourceController {
   private final ResourceService resourceService;
   private final ResourceMapper resourceMapper;
 
+  @GetMapping("/ping")
+  public ResponseEntity<?> pingPong() {
+    return ResponseEntity.ok("pong");
+  }
+
   @PostMapping(consumes = "multipart/form-data")
   public ResponseEntity<?> uploadAudioResource(@RequestParam("file") MultipartFile file) {
     String validationResult = validateAudioFile(file);
@@ -42,24 +47,6 @@ public class ResourceController {
     AudioResourceEntity resource = resourceService.uploadAudioResource(file);
     AudioResourceResponse audioResourceResponse = resourceMapper.modelToResponse(resource);
     return ResponseEntity.ok(audioResourceResponse);
-  }
-
-  private String validateAudioFile(MultipartFile file) {
-    if (file.isEmpty()) {
-      return "Error: File is empty.";
-    }
-    System.out.println("content type: " + file.getContentType());
-    if (!"audio/mpeg".equals(file.getContentType())) {
-      return "File has wrong content type. Should be audio/mpeg";
-    }
-
-    String fileName = file.getOriginalFilename();
-    if (fileName == null || fileName.isEmpty()) {
-      return "Error: Empty file name.";
-    }
-    log.debug("Validated audio file with name: {}", fileName);
-
-    return "";
   }
 
   @GetMapping("/{id}")
@@ -86,5 +73,23 @@ public class ResourceController {
 
     List<Integer> idsOfRemoved = resourceService.deleteResources(idsToDelete);
     return ResponseEntity.ok(new DeletedResourcesIDs(idsOfRemoved));
+  }
+
+  private String validateAudioFile(MultipartFile file) {
+    if (file.isEmpty()) {
+      return "Error: File is empty.";
+    }
+    System.out.println("content type: " + file.getContentType());
+    if (!"audio/mpeg".equals(file.getContentType())) {
+      return "File has wrong content type. Should be audio/mpeg";
+    }
+
+    String fileName = file.getOriginalFilename();
+    if (fileName == null || fileName.isEmpty()) {
+      return "Error: Empty file name.";
+    }
+    log.debug("Validated audio file with name: {}", fileName);
+
+    return "";
   }
 }
