@@ -14,8 +14,8 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data
 
-  resource-service-comp:
-    container_name: resource-service-comp
+  resource-service-compose:
+    container_name: resource-service-compose
     build:
       context: .
       dockerfile: Dockerfile
