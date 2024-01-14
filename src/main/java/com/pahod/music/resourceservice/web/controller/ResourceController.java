@@ -34,7 +34,7 @@ public class ResourceController {
 
   @GetMapping("/ping")
   public ResponseEntity<?> pingPong() {
-    return ResponseEntity.ok("pong");
+    return ResponseEntity.ok("resource pong");
   }
 
   @PostMapping(consumes = "multipart/form-data")
