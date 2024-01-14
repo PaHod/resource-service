@@ -1,5 +1,19 @@
 version: '3.8'
 services:
+  postgresdb:
+    container_name: postgresdb
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_SERVICE_PORT=${DB_SERVICE_PORT}
+    ports:
+      - "${DB_SERVICE_PORT}:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
   resource-service-comp:
     container_name: resource-service-comp
     build:
@@ -17,16 +31,3 @@ services:
     depends_on:
       - postgresdb
 
-  postgresdb:
-    container_name: postgresdb
-    image: postgres:alpine
-    restart: always
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_SERVICE_PORT=${DB_SERVICE_PORT}
-    ports:
-      - "${DB_SERVICE_PORT}:5432"
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
