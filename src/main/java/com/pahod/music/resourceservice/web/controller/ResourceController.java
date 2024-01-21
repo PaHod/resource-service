@@ -49,10 +49,10 @@ public class ResourceController {
     return ResponseEntity.ok(audioResourceResponse);
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<byte[]> getResource(@PathVariable("id") int id) {
-    log.debug("Get resource ID: {}", id);
-    AudioResourceEntity resource = resourceService.getResource(id);
+  @GetMapping("/{resourceId}")
+  public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
+    log.debug("Get resource ID: {}", resourceId);
+    AudioResourceEntity resource = resourceService.getResource(resourceId);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
