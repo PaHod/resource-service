@@ -5,10 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 @Entity(name = "audio_resource")
 public class AudioResourceEntity {
 
@@ -18,8 +19,7 @@ public class AudioResourceEntity {
   private Integer id;
 
   private String fileName;
-
-  private String fileType;
-
-  @Lob private byte[] data;
+  private String fileKey;
+  private String bucketName;
+  private String contentType;
 }
