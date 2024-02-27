@@ -1,14 +1,15 @@
 package com.pahod.music.resourceservice.web.controller;
 
-import com.pahod.music.resourceservice.entity.AudioResourceEntity;
+import com.pahod.music.resourceservice.service.RabbitService;
 import com.pahod.music.resourceservice.service.ResourceService;
+import com.pahod.music.resourceservice.web.dto.AudioResource;
+import com.pahod.music.resourceservice.web.dto.AudioResourceInfoResponse;
+import com.pahod.music.resourceservice.web.dto.AudioResourceSavedResponse;
 import com.pahod.music.resourceservice.web.dto.DeletedResourcesIDs;
-import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,15 +31,12 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ResourceController {
 
-  public static final String BINDING_NAME_NEW_AUDIO_FILE_UPLOADED = "new-audio-file-uploaded";
   private final ResourceService resourceService;
-  private final ResourceMapper resourceMapper;
-//  private final StreamBridge streamBridge;
+  private final RabbitService rabbitService;
 
   @PostMapping("/pingQ")
   public String sendMessage(@RequestBody String message) {
-//    streamBridge.send("new-audio-file-uploaded", message);
-    return "Message sent";
+    return rabbitService.sentMessage(message);
   }
 
   @PostMapping(consumes = "multipart/form-data")
@@ -48,10 +46,12 @@ public class ResourceController {
       return ResponseEntity.badRequest().body(validationResult);
     }
 
-    AudioResourceEntity resource = resourceService.uploadAudioResource(file);
-//    streamBridge.send(BINDING_NAME_NEW_AUDIO_FILE_UPLOADED, resource.getId());
+    AudioResourceSavedResponse audioResourceSavedResponse =
+        resourceService.uploadAudioResource(file);
 
-    return ResponseEntity.ok(resourceMapper.modelToResponse(resource));
+    rabbitService.notifyFileStored(audioResourceSavedResponse.getId());
+
+    return ResponseEntity.ok(audioResourceSavedResponse);
   }
 
   @GetMapping("/ping")
@@ -59,26 +59,27 @@ public class ResourceController {
     return ResponseEntity.ok("resource pong");
   }
 
-//  @GetMapping("/{resourceId}")
-//  public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
-//    log.debug("Get resource ID: {}", resourceId);
-//    AudioResourceEntity resource = resourceService.getResource(resourceId);
-//
-//    HttpHeaders headers = new HttpHeaders();
-//    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
-//    headers.setContentLength(resource.getData().length);
-//    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
-//
-//    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
-//    return ResponseEntity.ok()
-//        // Content-Disposition
-//        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileKey)
-//        // Content-Type
-//        .contentType(MediaType.parseMediaType("application/octet-stream"))
-//        // Content-Lengh
-//        .contentLength(s3Object.getObjectMetadata().getContentLength())
-//        .body(resource);
-//  }
+  @GetMapping("/{resourceId}")
+  public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
+    log.debug("Get resource ID: {}", resourceId);
+    AudioResource resource = resourceService.getResource(resourceId);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
+    headers.setContentLength(resource.getData().length);
+    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
+
+    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
+  }
+
+  @GetMapping("/info/{resourceId}")
+  public ResponseEntity<AudioResourceInfoResponse> getResourceInfo(
+      @PathVariable("resourceId") int resourceId) {
+    log.debug("Get resource ID: {}", resourceId);
+    AudioResourceInfoResponse resourceInfo = resourceService.getResourceInfo(resourceId);
+
+    return new ResponseEntity<>(resourceInfo, HttpStatus.OK);
+  }
 
   @DeleteMapping("/resources")
   public ResponseEntity<DeletedResourcesIDs> deleteResources(@RequestParam String idsParam) {

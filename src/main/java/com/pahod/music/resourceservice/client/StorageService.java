@@ -6,13 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-
-// import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Service
@@ -50,18 +51,14 @@ public class StorageService {
     }
   }
 
-  public MultipartFile fetchFile(String fileKey, String bucketName) {
-    MultipartFile audioFile = null;
+  public byte[] fetchFile(String fileKey, String bucketName) {
 
-    //    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-    //            .bucket(bucketName)
-    //            .key(fileKey)
-    //            .build();
-    //
-    //    ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
-    //    GetObjectResponse objectInputStream = s3Object.response();
-    //    InputStreamResource resource = new InputStreamResource(objectInputStream);
-    //
-    return audioFile;
+    GetObjectRequest objectRequest =
+        GetObjectRequest.builder().bucket(bucketName).key(fileKey).build();
+
+    ResponseBytes<GetObjectResponse> responseResponseBytes =
+        s3Client.getObjectAsBytes(objectRequest);
+
+    return responseResponseBytes.asByteArray();
   }
 }
