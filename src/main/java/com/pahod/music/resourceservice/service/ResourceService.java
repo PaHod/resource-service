@@ -70,7 +70,7 @@ public class ResourceService {
     String bucketName = audioResourceEntity.getBucketName();
     String contentType = audioResourceEntity.getContentType();
 
-    storageService.fetchFile(fileKey, storageService.bucketName);
+    storageService.fetchFile(fileKey, bucketName);
 
     return audioResourceEntity;
   }

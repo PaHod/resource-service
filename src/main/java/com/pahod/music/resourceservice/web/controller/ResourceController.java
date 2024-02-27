@@ -33,11 +33,11 @@ public class ResourceController {
   public static final String BINDING_NAME_NEW_AUDIO_FILE_UPLOADED = "new-audio-file-uploaded";
   private final ResourceService resourceService;
   private final ResourceMapper resourceMapper;
-  private final StreamBridge streamBridge;
+//  private final StreamBridge streamBridge;
 
   @PostMapping("/pingQ")
   public String sendMessage(@RequestBody String message) {
-    streamBridge.send("new-audio-file-uploaded", message);
+//    streamBridge.send("new-audio-file-uploaded", message);
     return "Message sent";
   }
 
@@ -49,7 +49,7 @@ public class ResourceController {
     }
 
     AudioResourceEntity resource = resourceService.uploadAudioResource(file);
-    streamBridge.send(BINDING_NAME_NEW_AUDIO_FILE_UPLOADED, resource.getId());
+//    streamBridge.send(BINDING_NAME_NEW_AUDIO_FILE_UPLOADED, resource.getId());
 
     return ResponseEntity.ok(resourceMapper.modelToResponse(resource));
   }
@@ -59,26 +59,26 @@ public class ResourceController {
     return ResponseEntity.ok("resource pong");
   }
 
-  @GetMapping("/{resourceId}")
-  public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
-    log.debug("Get resource ID: {}", resourceId);
-    AudioResourceEntity resource = resourceService.getResource(resourceId);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
-    headers.setContentLength(resource.getData().length);
-    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
-
-    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
-    return ResponseEntity.ok()
-        // Content-Disposition
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileKey)
-        // Content-Type
-        .contentType(MediaType.parseMediaType("application/octet-stream"))
-        // Content-Lengh
-        .contentLength(s3Object.getObjectMetadata().getContentLength())
-        .body(resource);
-  }
+//  @GetMapping("/{resourceId}")
+//  public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
+//    log.debug("Get resource ID: {}", resourceId);
+//    AudioResourceEntity resource = resourceService.getResource(resourceId);
+//
+//    HttpHeaders headers = new HttpHeaders();
+//    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
+//    headers.setContentLength(resource.getData().length);
+//    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
+//
+//    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
+//    return ResponseEntity.ok()
+//        // Content-Disposition
+//        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileKey)
+//        // Content-Type
+//        .contentType(MediaType.parseMediaType("application/octet-stream"))
+//        // Content-Lengh
+//        .contentLength(s3Object.getObjectMetadata().getContentLength())
+//        .body(resource);
+//  }
 
   @DeleteMapping("/resources")
   public ResponseEntity<DeletedResourcesIDs> deleteResources(@RequestParam String idsParam) {

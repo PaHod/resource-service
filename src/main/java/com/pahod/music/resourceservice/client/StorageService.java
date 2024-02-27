@@ -4,6 +4,7 @@ import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
@@ -14,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 // import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
+@Service
 public class StorageService {
 
   private final S3Client s3Client;
@@ -21,7 +23,8 @@ public class StorageService {
 
   @Autowired
   public StorageService(
-      @Value("${aws.region}") String awsRegion, @Value("${aws.bucketName}") String bucketName) {
+      @Value("${cloud.aws.region.static}") String awsRegion,
+      @Value("${cloud.aws.bucket.name}") String bucketName) {
     s3Client = S3Client.builder().region(Region.of(awsRegion)).build();
     this.bucketName = bucketName;
   }
@@ -48,7 +51,7 @@ public class StorageService {
   }
 
   public MultipartFile fetchFile(String fileKey, String bucketName) {
-    //    MultipartFile audioFile = <retrieve file here>;
+    MultipartFile audioFile = null;
 
     //    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
     //            .bucket(bucketName)
@@ -59,6 +62,6 @@ public class StorageService {
     //    GetObjectResponse objectInputStream = s3Object.response();
     //    InputStreamResource resource = new InputStreamResource(objectInputStream);
     //
-    //    return audioFile;
+    return audioFile;
   }
 }
