@@ -1,6 +1,6 @@
 package com.pahod.music.resourceservice.web.controller;
 
-import com.pahod.music.resourceservice.service.RabbitService;
+import com.pahod.music.resourceservice.service.MessageBrokerService;
 import com.pahod.music.resourceservice.service.ResourceService;
 import com.pahod.music.resourceservice.web.dto.AudioResource;
 import com.pahod.music.resourceservice.web.dto.AudioResourceInfoResponse;
@@ -32,11 +32,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class ResourceController {
 
   private final ResourceService resourceService;
-  private final RabbitService rabbitService;
+  private final MessageBrokerService messageBrokerService;
 
-  @PostMapping("/pingQ")
+  @PostMapping("/pingRabbit")
   public String sendMessage(@RequestBody String message) {
-    return rabbitService.sentMessage(message);
+    return messageBrokerService.sentMessage(message);
   }
 
   @PostMapping(consumes = "multipart/form-data")
@@ -49,7 +49,7 @@ public class ResourceController {
     AudioResourceSavedResponse audioResourceSavedResponse =
         resourceService.uploadAudioResource(file);
 
-    rabbitService.notifyFileStored(audioResourceSavedResponse.getId());
+    messageBrokerService.notifyFileStored(audioResourceSavedResponse.getId());
 
     return ResponseEntity.ok(audioResourceSavedResponse);
   }

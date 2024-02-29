@@ -3,8 +3,8 @@ server:
 
 spring:
   datasource:
-#    url: jdbc:postgresql://host.docker.internal:5432/music_resource
-#    url: jdbc:postgresql://localhost:5432/music_resource
+    #    url: jdbc:postgresql://host.docker.internal:5432/music_resource
+    #    url: jdbc:postgresql://localhost:5432/music_resource
     url: jdbc:postgresql://${DB_SERVICE_HOST}:${DB_SERVICE_PORT}/${DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
@@ -18,14 +18,21 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-#  rabbitmq:
-#    host: localhost
-#    port: 5672
-#    username: guest
-#    password: guest
-#  cloud.stream.bindings:
-#    output.destination:message_queue
-#    input.destination:message_queue
+  rabbitmq:
+    ssl:
+      enabled: true
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+rabbitmq:
+  queue:
+    name: music_queue
+  exchange:
+    name: music_exchange
+  routing:
+    key: music_routing_key
 
 cloud:
   aws:

@@ -13,7 +13,6 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,7 +47,6 @@ public class ResourceService {
     return resourceMapper.modelToSavedResponse(saved);
   }
 
-  @NotNull
   private static String generateFileKey(MultipartFile audioFile) {
     // todo validate key uniqueness
     String originalFilename = audioFile.getOriginalFilename();
