@@ -28,9 +28,12 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_REGISTRY_URI:http://localhost:8766/eureka}
 
-eureka.client:
-  service-url.defaultZone: ${EUREKA_REGISTRY_URI:http://localhost:8761/eureka}
+management.endpoints.web.exposure.include: '*'
 
 rabbitmq:
   queue:
