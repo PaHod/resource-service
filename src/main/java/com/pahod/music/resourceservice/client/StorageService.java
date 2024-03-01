@@ -43,7 +43,7 @@ public class StorageService {
           s3Client.putObject(objectRequest, RequestBody.fromBytes(audioFile.getBytes()));
 
       log.debug("File uploaded successfully. Etag: {}", response.eTag());
-      return response.eTag();
+      return bucketName;
 
     } catch (IOException e) {
       e.printStackTrace();
