@@ -1,10 +1,11 @@
 package com.pahod.music.resourceservice.web.controller;
 
-import com.pahod.music.resourceservice.entity.AudioResourceEntity;
+import com.pahod.music.resourceservice.service.MessageBrokerService;
 import com.pahod.music.resourceservice.service.ResourceService;
-import com.pahod.music.resourceservice.web.dto.AudioResourceResponse;
+import com.pahod.music.resourceservice.web.dto.AudioResource;
+import com.pahod.music.resourceservice.web.dto.AudioResourceInfoResponse;
+import com.pahod.music.resourceservice.web.dto.AudioResourceSavedResponse;
 import com.pahod.music.resourceservice.web.dto.DeletedResourcesIDs;
-import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,11 +32,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class ResourceController {
 
   private final ResourceService resourceService;
-  private final ResourceMapper resourceMapper;
+  private final MessageBrokerService messageBrokerService;
 
-  @GetMapping("/ping")
-  public ResponseEntity<?> pingPong() {
-    return ResponseEntity.ok("resource pong");
+  @PostMapping("/pingRabbit")
+  public String sendMessage(@RequestBody String message) {
+    return messageBrokerService.sentMessage(message);
   }
 
   @PostMapping(consumes = "multipart/form-data")
@@ -44,15 +46,23 @@ public class ResourceController {
       return ResponseEntity.badRequest().body(validationResult);
     }
 
-    AudioResourceEntity resource = resourceService.uploadAudioResource(file);
-    AudioResourceResponse audioResourceResponse = resourceMapper.modelToResponse(resource);
-    return ResponseEntity.ok(audioResourceResponse);
+    AudioResourceSavedResponse audioResourceSavedResponse =
+        resourceService.uploadAudioResource(file);
+
+    messageBrokerService.notifyFileStored(audioResourceSavedResponse.getId());
+
+    return ResponseEntity.ok(audioResourceSavedResponse);
+  }
+
+  @GetMapping("/ping")
+  public ResponseEntity<?> pingPong() {
+    return ResponseEntity.ok("resource pong");
   }
 
   @GetMapping("/{resourceId}")
   public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
     log.debug("Get resource ID: {}", resourceId);
-    AudioResourceEntity resource = resourceService.getResource(resourceId);
+    AudioResource resource = resourceService.getResource(resourceId);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
@@ -60,6 +70,15 @@ public class ResourceController {
     headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
 
     return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
+  }
+
+  @GetMapping("/info/{resourceId}")
+  public ResponseEntity<AudioResourceInfoResponse> getResourceInfo(
+      @PathVariable("resourceId") int resourceId) {
+    log.debug("Get resource ID: {}", resourceId);
+    AudioResourceInfoResponse resourceInfo = resourceService.getResourceInfo(resourceId);
+
+    return new ResponseEntity<>(resourceInfo, HttpStatus.OK);
   }
 
   @DeleteMapping("/resources")

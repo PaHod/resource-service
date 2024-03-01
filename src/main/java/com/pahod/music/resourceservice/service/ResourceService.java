@@ -1,24 +1,20 @@
 package com.pahod.music.resourceservice.service;
 
-import com.pahod.music.resourceservice.client.SongClient;
+import com.pahod.music.resourceservice.client.StorageService;
 import com.pahod.music.resourceservice.entity.AudioResourceEntity;
-import com.pahod.music.resourceservice.exception.FileParsingException;
 import com.pahod.music.resourceservice.exception.ResourceNotFoundException;
 import com.pahod.music.resourceservice.repository.ResourceRepository;
-import java.io.IOException;
-import java.io.InputStream;
+import com.pahod.music.resourceservice.web.dto.AudioResource;
+import com.pahod.music.resourceservice.web.dto.AudioResourceInfoResponse;
+import com.pahod.music.resourceservice.web.dto.AudioResourceSavedResponse;
+import com.pahod.music.resourceservice.web.mapper.ResourceMapper;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.mp3.LyricsHandler;
-import org.apache.tika.parser.mp3.Mp3Parser;
-import org.apache.tika.sax.BodyContentHandler;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.xml.sax.SAXException;
 
 @Slf4j
 @Service
@@ -26,55 +22,64 @@ import org.xml.sax.SAXException;
 public class ResourceService {
 
   private final ResourceRepository resourceRepository;
-  private final SongClient songClient;
+  private final StorageService storageService;
+  private final ResourceMapper resourceMapper;
 
-  private static Metadata parseMetadata(MultipartFile audioFile) {
-    Mp3Parser mp3Parser = new Mp3Parser();
-    BodyContentHandler handler = new BodyContentHandler();
-    Metadata metadata = new Metadata();
-    ParseContext parseContext = new ParseContext();
+  public AudioResourceSavedResponse uploadAudioResource(MultipartFile audioFile) {
+    String fileKey = generateFileKey(audioFile);
+    String originalFilename = audioFile.getOriginalFilename();
+    String contentType = audioFile.getContentType();
 
-    try (InputStream inputStream = audioFile.getInputStream()) {
-      mp3Parser.parse(inputStream, handler, metadata, parseContext);
+    String bucketName = storageService.storeFile(audioFile, fileKey);
+    log.debug("File stored with key: {}", fileKey);
 
-      LyricsHandler lyrics = new LyricsHandler(inputStream, handler);
-      while (lyrics.hasLyrics()) {
-        System.out.println(lyrics);
-      }
-    } catch (IOException | SAXException | TikaException e) {
-      throw new FileParsingException("Failed to parse metadata.");
-    }
+    AudioResourceEntity audioResourceEntity =
+        AudioResourceEntity.builder()
+            .fileName(originalFilename)
+            .fileKey(fileKey)
+            .bucketName(bucketName)
+            .contentType(contentType)
+            .build();
 
-    return metadata;
-  }
-
-  public AudioResourceEntity uploadAudioResource(MultipartFile audioFile) {
-    AudioResourceEntity audioResourceEntity = getAudioResourceEntity(audioFile);
     AudioResourceEntity saved = resourceRepository.save(audioResourceEntity);
-    log.debug("Saved audio file to DB: {}", saved);
+    log.debug("Resource info saved to DB: {}", saved);
 
-    Metadata metadata = parseMetadata(audioFile);
-    songClient.saveMetadata(metadata, audioResourceEntity.getId());
-
-    return saved;
+    return resourceMapper.modelToSavedResponse(saved);
   }
 
-  private AudioResourceEntity getAudioResourceEntity(MultipartFile audioFile) {
-    try {
-      AudioResourceEntity audioResourceEntity = new AudioResourceEntity();
-      audioResourceEntity.setFileName(audioFile.getOriginalFilename());
-      audioResourceEntity.setFileType(audioFile.getContentType());
-      audioResourceEntity.setData(audioFile.getBytes());
-      return audioResourceEntity;
-    } catch (IOException e) {
-      throw new FileParsingException("Failed to get file content.");
-    }
+  private static String generateFileKey(MultipartFile audioFile) {
+    // todo validate key uniqueness
+    String originalFilename = audioFile.getOriginalFilename();
+    int extensionIndex = Objects.requireNonNull(originalFilename).lastIndexOf(".");
+    String name = originalFilename.substring(0, extensionIndex);
+    String extension = originalFilename.substring(extensionIndex);
+
+    return name + RandomStringUtils.randomAlphanumeric(10) + extension;
   }
 
-  public AudioResourceEntity getResource(int id) {
+  public AudioResource getResource(int resourceId) {
+    AudioResourceEntity audioResourceEntity = getAudioResourceEntity(resourceId);
+
+    String fileKey = audioResourceEntity.getFileKey();
+    String bucketName = audioResourceEntity.getBucketName();
+    byte[] data = storageService.fetchFile(fileKey, bucketName);
+    AudioResource audioResourceInfoResponse =
+        resourceMapper.modelToAudioResponse(audioResourceEntity);
+    audioResourceInfoResponse.setData(data);
+    return audioResourceInfoResponse;
+  }
+
+  public AudioResourceInfoResponse getResourceInfo(int resourceId) {
+    AudioResourceEntity audioResourceEntity = getAudioResourceEntity(resourceId);
+
+    return resourceMapper.modelToInfoResponse(audioResourceEntity);
+  }
+
+  private AudioResourceEntity getAudioResourceEntity(int resourceId) {
     return resourceRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Couldn't find resource for Id: " + id));
+        .findById(resourceId)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("Couldn't find resource for Id: " + resourceId));
   }
 
   public List<Integer> deleteResources(List<Integer> idsToDelete) {

@@ -9,8 +9,9 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="file_name" type="VARCHAR(100)"/>
-            <column name="file_type" type="VARCHAR(100)"/>
-            <column name="data" type="blob"/>
+            <column name="file_key" type="VARCHAR(100)"/>
+            <column name="bucket_name" type="VARCHAR(100)"/>
+            <column name="content_type" type="VARCHAR(100)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>
