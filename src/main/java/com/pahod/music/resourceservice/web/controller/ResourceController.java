@@ -1,5 +1,6 @@
 package com.pahod.music.resourceservice.web.controller;
 
+
 import com.pahod.music.resourceservice.service.MessageBrokerService;
 import com.pahod.music.resourceservice.service.ResourceService;
 import com.pahod.music.resourceservice.web.dto.AudioResource;
@@ -10,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,10 +34,16 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ResourceController {
 
+  public static final String AUDIO_MPEG = "audio/mpeg";
   private final ResourceService resourceService;
   private final MessageBrokerService messageBrokerService;
 
-  @PostMapping("/pingRabbit")
+  @GetMapping("/ping")
+  public ResponseEntity<?> pingPong() {
+    return ResponseEntity.ok("resource pong");
+  }
+
+  @PostMapping("/sendToRabbit")
   public String sendMessage(@RequestBody String message) {
     return messageBrokerService.sentMessage(message);
   }
@@ -54,22 +63,15 @@ public class ResourceController {
     return ResponseEntity.ok(audioResourceSavedResponse);
   }
 
-  @GetMapping("/ping")
-  public ResponseEntity<?> pingPong() {
-    return ResponseEntity.ok("resource pong");
-  }
-
   @GetMapping("/{resourceId}")
   public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
     log.debug("Get resource ID: {}", resourceId);
     AudioResource resource = resourceService.getResource(resourceId);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.parseMediaType("audio/mpeg"));
-    headers.setContentLength(resource.getData().length);
-    headers.set("Content-Disposition", "inline; filename=\"" + resource.getFileName() + "\"");
+    byte[] body = resource.getData();
 
-    return new ResponseEntity<>(resource.getData(), headers, HttpStatus.OK);
+    HttpHeaders headers = getHttpHeadersInline(resource);
+    return ResponseEntity.ok().headers(headers).body(body);
   }
 
   @GetMapping("/info/{resourceId}")
@@ -99,7 +101,7 @@ public class ResourceController {
       return "Error: File is empty.";
     }
     System.out.println("content type: " + file.getContentType());
-    if (!"audio/mpeg".equals(file.getContentType())) {
+    if (!AUDIO_MPEG.equals(file.getContentType())) {
       return "File has wrong content type. Should be audio/mpeg";
     }
 
@@ -110,5 +112,18 @@ public class ResourceController {
     log.debug("Validated audio file with name: {}", fileName);
 
     return "";
+  }
+
+  @NotNull
+  private static HttpHeaders getHttpHeadersInline(AudioResource resource) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(AUDIO_MPEG));
+
+    headers.setContentLength(resource.getData().length);
+
+    headers.setContentDisposition(
+            ContentDisposition.inline().filename(resource.getFileName()).build());
+
+    return headers;
   }
 }
