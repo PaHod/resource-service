@@ -54,3 +54,9 @@ cloud:
       static: "eu-north-1"
     stack:
       auto: false
+
+
+client:
+  services:
+    storage:
+      endpoint: http://${API_GATEWAY_NAME}/api/v1/storages

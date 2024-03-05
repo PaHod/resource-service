@@ -63,6 +63,12 @@ public class ResourceController {
     return ResponseEntity.ok(audioResourceSavedResponse);
   }
 
+  @PostMapping("/resource-processed/{resourceId}")
+  public void songProcessed(@PathVariable("resourceId") int resourceId) {
+    log.debug("Song with ID: {} has been processed.", resourceId);
+    resourceService.resourceProcessed(resourceId);
+  }
+
   @GetMapping("/{resourceId}")
   public ResponseEntity<byte[]> getResource(@PathVariable("resourceId") int resourceId) {
     log.debug("Get resource ID: {}", resourceId);
