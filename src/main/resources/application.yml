@@ -60,3 +60,12 @@ client:
   services:
     storage:
       endpoint: http://${API_GATEWAY_NAME}/api/v1/storages
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      getAllStorageTypes:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 1000ms
