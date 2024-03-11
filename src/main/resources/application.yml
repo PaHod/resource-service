@@ -69,3 +69,14 @@ resilience4j:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 1000ms
+  retry:
+    instances:
+      s3Client:
+        maxAttempts: 3
+        waitDuration: 100ms
+      storageInfoClient:
+        maxAttempts: 10
+        waitDuration: 100ms
+      rabbitMQProducer:
+        maxAttempts: 5
+        waitDuration: 100ms

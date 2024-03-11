@@ -10,7 +10,7 @@ public class MessageBrokerService {
   private final RabbitMQProducer rabbitMQProducer;
 
   public void notifyFileStored(Integer id) {
-    rabbitMQProducer.sendMessage(id);
+    rabbitMQProducer.notifyFileStored(id);
   }
 
   public String sentMessage(String message) {

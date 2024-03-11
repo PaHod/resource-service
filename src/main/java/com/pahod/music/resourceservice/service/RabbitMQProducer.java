@@ -1,5 +1,6 @@
 package com.pahod.music.resourceservice.service;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@Retry(name = "rabbitMQProducer")
 public class RabbitMQProducer {
 
   @Value("${rabbitmq.exchange.name}")
@@ -26,7 +28,7 @@ public class RabbitMQProducer {
     rabbitTemplate.convertAndSend(exchange, routingKey, message);
   }
 
-  public void sendMessage(Integer id) {
+  public void notifyFileStored(Integer id) {
     log.info(String.format("Message sent -> resource stored with id: %d", id));
     rabbitTemplate.convertAndSend(exchange, routingKey, id);
   }

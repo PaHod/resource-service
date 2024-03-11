@@ -2,6 +2,7 @@ package com.pahod.music.resourceservice.client;
 
 import com.pahod.music.resourceservice.entity.StorageInfo;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
+@Retry(name = "storageInfoClient")
 public class StorageInfoClient {
 
   private final String apiURI;
@@ -29,6 +31,7 @@ public class StorageInfoClient {
 
   @CircuitBreaker(name = "getAllStorageTypes", fallbackMethod = "getStorageInfoFallback")
   public List<StorageInfo> getAllStorageTypes() {
+    log.info("Get storage types");
     return webClient
         .get()
         .uri(apiURI)
